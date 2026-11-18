@@ -11,6 +11,19 @@ How to combine synthetic scenarios with real network data, allowing teams/design
 and safely reproduce varrying network conditions.
 * I will do all simulation in Claude app.
 
+## Rigorous AI Validation Techniques
+
+```
+
+  [Large Telco Models] ➔ [Intent-Driven Guardrails] ➔ [Digital Twin Simulation] ➔ [Human-in-the-Loop Approval]
+
+```
+
+## Challenges for L1/L2 stack 
+
+Unlike higher-level orchestration (which operates in seconds or minutes), 
+the L1/L2 AI Models run directly on the data plane and hardware accelerators (HWAs).
+
 ## Pre-deployment validation playbook for AI in the RAN
 
 Confidence is evidence that a specific model version behaves acceptably for a defined use case, on a defined network, under normal and degraded conditions. A high model score is not a release decision. Before a model controls live traffic, establish independently that it makes useful decisions, protects service, and has a credible business case. Record untested conditions and keep the baseline policy in control there.
