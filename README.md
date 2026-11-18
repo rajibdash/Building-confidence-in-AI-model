@@ -24,6 +24,12 @@ and safely reproduce varrying network conditions.
 Unlike higher-level orchestration (which operates in seconds or minutes), 
 the L1/L2 AI Models run directly on the data plane and hardware accelerators (HWAs).
 
+* **The Microsecond Deadline (Hard Real-Time)**: At Layer 1, functions like channel estimation, Massive MIMO beamforming, and interference cancellation must execute within a fraction of a slot duration (often < 500 μs). If a model introduces a processing bottleneck, it causes packet drops and immediate SLA violations.
+  
+* **Extreme Resource Constraints**: Deep learning models are inherently compute-heavy. Running unoptimized neural networks on edge cell sites strains local hardware accelerators (FPGAs, eASICs, GPUs), skyrocketing the network's Power Consumption (OPEX).
+  
+* **The "Black Box" Channel Paradox**: Radio frequency (RF) channels fluctuate unpredictably due to sudden blockages, weather, or high mobility (e.g., bullet trains). An AI model trained on historical channel state information (CSI) can easily fail when encountering a novel, real-world multi-path fading environment.
+
 ## Pre-deployment validation playbook for AI in the RAN
 
 Confidence is evidence that a specific model version behaves acceptably for a defined use case, on a defined network, under normal and degraded conditions. A high model score is not a release decision. Before a model controls live traffic, establish independently that it makes useful decisions, protects service, and has a credible business case. Record untested conditions and keep the baseline policy in control there.
