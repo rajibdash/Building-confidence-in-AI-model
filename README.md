@@ -8,6 +8,9 @@ making it difficult to properly train and test AI models.
 
 AI Models life cycle management in an operational network.
 
+Any possible outage scenario if __increase AI workload__ creates overload on traditional network hardware like L2 switches or routers which are configured with hardware peak data rate limit. 
+Exceeding Fronthaul capacity or rate boundary. 
+
 ## Simulation perspective
 How to combine synthetic scenarios with real network data, allowing teams/designers to generate __realistic training datasets__
 and safely reproduce varrying network conditions.
@@ -45,10 +48,10 @@ Confidence is evidence that a specific model version behaves acceptably for a de
 
 | Placement or use case | Examples of behavior to validate |
 | --- | --- |
-| PHY: beam, CSI, or link adaptation | BLER, beam failures and recovery, spectral efficiency, and deadline misses under changing channel conditions; retain a conventional control path. |
-| MAC: scheduling or resource allocation | Cell-edge and per-service throughput, HARQ behavior, queue delay, fairness, and deadline misses under bursty loads and mixed QoS. |
+| PHY: Adaptive waveform, beam, CSI, or link adaptation | BLER, beam failures and recovery, spectral efficiency, and deadline misses under changing channel conditions; retain a conventional control path. |
+| MAC: Scheduling or resource allocation | Cell-edge and per-service throughput, HARQ behavior, queue delay, fairness, and deadline misses under bursty loads and mixed QoS. |
 | RLC / PDCP, where applicable | Buffer and discard behavior, retransmissions, packet loss and ordering, and tail latency across transport and mobility conditions. |
-| RRC / mobility | Handover success, interruption time, radio link failures, and ping-pong rates across speeds, cell boundaries, and neighbor combinations. |
+| RRC / mobility | Handover success, interruption time(HOIT), radio link failures(or link readaptation), and ping-pong rates across speeds, cell boundaries, and neighbor combinations. |
 | RIC / SON: optimization or energy saving | Neighbor-cell impact, oscillation and convergence, coverage, wake-up delay, and energy per delivered unit of traffic alongside absolute energy use. |
 
 ### 2. Establish that the data and simulator represent the network
