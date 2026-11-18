@@ -786,3 +786,5 @@ Some values appear with different numbers or on different bases in different pla
 - **PlugFest scale.** The body text says 29 operator hosts across 28 labs (p. 9); the annex says the program was co-hosted by 29 operators, OTICs, and academic and research institutions in 28 labs, and separately gives 31 hosts in 24 labs for the Fall 2024 PlugFest [11].
 - **3GPP Release 18.** The body text says Release 18 mandates AI/ML for energy saving, load balancing, and mobility (p. 7); the annex says these use cases are specified in it [10].
 - **Source numbering.** Two annex entries are numbered 17, and entries [4] and [14] describe the same beam-management demonstration.
+
+Author: Rajib Dash
