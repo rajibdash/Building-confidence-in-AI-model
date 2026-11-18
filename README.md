@@ -6,6 +6,8 @@ Live networks don't always provide enough examples of unusual events, such as in
 unexpected traffic patterns, handover failures or network outages, 
 making it difficult to properly train and test AI models.
 
+AI Models life cycle management in as operational network.
+
 ## Simulation perspective
 How to combine synthetic scenarios with real network data, allowing teams/designers to generate __realistic training datasets__
 and safely reproduce varrying network conditions.
