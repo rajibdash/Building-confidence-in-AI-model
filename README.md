@@ -105,3 +105,22 @@ Classify **network health** independently of **weather**. A clear day can have s
 - **Gate release by condition, not by average.** Measure false interventions in healthy weather-affected sites, time to detect degradation and restore service, tail latency, drops, priority-service performance, neighbor impact, and rollback success. Require service guardrails in each supported critical slice. Keep unvalidated conditions on the baseline or in advisory mode. Estimate weather-related benefits using local event frequency and avoided service disruption where measurable, net of added telemetry, compute, and operational costs; claim savings only with attributable evidence.
 
 For propagation modeling, see [ITU-R P.838 (rain specific attenuation)](https://www.itu.int/rec/R-REC-P.838/en) and [ITU-R P.530 (terrestrial line-of-sight links)](https://www.itu.int/rec/R-REC-P.530/en). Check applicability to the actual band, path, and equipment, and calibrate against operator measurements.
+
+### 8. Do-not-skip checks before autonomous network control
+
+**Verification** asks whether the packaged model and controller obey their specifications. **Validation** asks whether their decisions protect service and improve the intended KPI in the supported network conditions.
+
+| Do not skip | Simulate or verify | Required evidence |
+| --- | --- | --- |
+| Define the operating envelope and baseline | Run the current operator policy and candidate on matched traffic, topology, and mobility. Include an unsupported configuration. | Set the minimum useful gain, protected KPI limits, and decision deadline before testing. Unsupported conditions stay on the baseline. |
+| Validate telemetry and uncertainty | Replay held-out site or incident traces. Inject missing, stale, and out-of-order telemetry and unfamiliar load. | Confirm feature parity with production and verify abstention or fallback before unsafe actuation. |
+| Verify action guardrails and timing | Submit out-of-bounds, duplicate, or expired actions; add inference delays and conflicting controller requests. | Independent guardrails reject invalid actions, and late decisions cannot change live state. Confirm end-to-end timing on the target stack. |
+| Validate closed-loop stability and service impact | Combine a traffic surge with a neighbor or backhaul fault. Let the model's actions change subsequent network state. | No sustained oscillation or cascading overload. Compare the intended gain, tail latency, drops, and protected service KPIs against the baseline, including the worst supported slices. |
+| Rehearse fallback and rollback | Disable the model or monitoring during an active change. Restore the known-good policy, then repeat the fault during recovery. | Demonstrate an independent stop and rollback path, reconcile outstanding actions, and restore service within the agreed recovery time. |
+| Require reproducible evidence and operator sign-off | Repeat paired runs across multiple seeds and record model, simulator, scenario, and guardrail versions. Rehearse on isolated staging. | No live actuation if a hard limit is breached, critical evidence is missing, or a required gain is inconclusive. Keep untested conditions on the baseline. |
+
+#### Recommended simulator: ns-3
+
+Start with [ns-3 (GitHub mirror)](https://github.com/nsnam/ns-3-dev-git) for repeatable, packet-level closed-loop tests. Add [5G-LENA](https://5g-lena.cttc.es/) for 5G NR radio behavior, and pin a compatible pair of versions. Connect the packaged model and its action guardrails to a simulated telemetry and control loop; ns-3 supplies the network behavior, not the model or a confidence score.
+
+**First experiment: two-cell load steering.** Compare the current operator policy and the AI policy in separate runs with matched traffic, UE mobility, and random seeds. Run steady traffic, add a surge in one cell, reduce the neighboring cell's backhaul capacity, then restore it. Repeat with delayed telemetry and a model timeout. Record overload, packet loss, p95 latency, action reversals, and time to fall back and recover. Judge each run against the predeclared limits. Calibrate the simulator on approved operator traces, check its fidelity on separate held-out traces, and repeat timing and rollback checks in isolated staging. Simulation alone does not authorize deployment.
