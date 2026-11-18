@@ -9,3 +9,71 @@ making it difficult to properly train and test AI models.
 ## Simulation perspective
 How to combine synthetic scenarios with real network data, allowing teams/designers to generate __realistic training datasets__
 and safely reproduce varrying network conditions.
+
+## Pre-deployment validation playbook for AI in the RAN
+
+Confidence is evidence that a specific model version behaves acceptably for a defined use case, on a defined network, under normal and degraded conditions. A high model score is not a release decision. Before a model controls live traffic, establish independently that it makes useful decisions, protects service, and has a credible business case. Record untested conditions and keep the baseline policy in control there.
+
+### 1. Define the operating envelope and pass criteria
+
+- Document the decision, inputs, outputs, timing deadline, allowed actions, control authority, dependencies, and fallback. Separate **observe** (read-only), **recommend** (human approval), and **act** (automated control); require stronger evidence as authority and potential impact increase.
+- State the supported bands, bandwidths, duplex modes, radio configurations, cell types, UE capabilities, vendors, software versions, traffic and mobility ranges, and service classes. Define how unsupported, stale, or unknown conditions are detected and handled.
+- Compare against the current operator policy with identical guardrails and inputs where possible, and against a simple heuristic or statistical model. Set a minimum worthwhile improvement, non-inferiority margins for protected service KPIs, hard safety limits, test duration, sample size, and stop rules before tuning.
+- Map every critical requirement to a scenario, metric, threshold, evidence artifact, and owner. Treat absent evidence in a critical scenario as a coverage gap, not a pass.
+
+| Placement or use case | Examples of behavior to validate |
+| --- | --- |
+| PHY: beam, CSI, or link adaptation | BLER, beam failures and recovery, spectral efficiency, and deadline misses under changing channel conditions; retain a conventional control path. |
+| MAC: scheduling or resource allocation | Cell-edge and per-service throughput, HARQ behavior, queue delay, fairness, and deadline misses under bursty loads and mixed QoS. |
+| RLC / PDCP, where applicable | Buffer and discard behavior, retransmissions, packet loss and ordering, and tail latency across transport and mobility conditions. |
+| RRC / mobility | Handover success, interruption time, radio link failures, and ping-pong rates across speeds, cell boundaries, and neighbor combinations. |
+| RIC / SON: optimization or energy saving | Neighbor-cell impact, oscillation and convergence, coverage, wake-up delay, and energy per delivered unit of traffic alongside absolute energy use. |
+
+### 2. Establish that the data and simulator represent the network
+
+- Inventory and version the telemetry, labels, feature definitions, configurations, and collection windows. Verify units, time alignment, counter resets and denominators, missingness, sampling bias, and label quality. Check that each feature would be available by the real decision deadline and that training and serving compute it the same way.
+- Split data before fitting, simulation calibration decisions, or augmentation. Use time-forward holdouts and hold out entire sites or correlated cell clusters, devices, incidents, or vendor configurations as applicable. Keep the final test set locked. Deduplicate before splitting and prevent leakage from future KPIs, overlapping windows, or synthetic variants of test traces.
+- Use approved, minimized telemetry; pseudonymize sensitive identifiers, restrict access and retention, and avoid subscriber payloads unless specifically authorized and necessary. Document collection gaps and what cannot be inferred.
+- Calibrate a system/link simulator or digital twin against approved real traces. Compare joint distributions, time dynamics, handover and interference patterns, and KPI tails on separate real traces, not just averages on calibration sites. Record where fidelity is insufficient; report results on real-only, synthetic-only, and blended sets separately. Do not treat synthetic samples as independent evidence of real-world uplift.
+- Build a coverage matrix spanning busy and quiet hours, urban/rural and indoor/outdoor sites, cell edge, UE mixes, mobility, traffic profiles, and seasonal or special-event peaks. Add rare and combined cases in the lab: congestion with handovers, neighbor outages with load shifts, interference or coverage degradation, telemetry delay/loss, and equipment or software changes. Use systematic scenario sweeps, boundary tests, and multiple random seeds; separate plausible scenarios from out-of-envelope stress tests.
+
+### 3. Validate offline performance, uncertainty, and control behavior
+
+- Match metrics to the decision: precision/recall at the action threshold for alerts, forecast error and interval coverage for predictions, and service KPIs plus constraint violations for control. Compare at the same operating point or action budget. Report denominators, tail percentiles, and results by site, band, device, service class, mobility, and load, including the worst supported slices.
+- Quantify uncertainty in two different ways. For predictive confidence, use reliability plots and Brier score for probabilities or empirical coverage for prediction intervals; check calibration by slice and under shift. For KPI uplift, report confidence intervals that account for correlated cells and time windows (for example, cluster or block bootstrap). Define a minimum sample size per critical slice; do not treat zero observed failures as proof of zero risk.
+- Evaluate abstention on missing, stale, noisy, and out-of-distribution inputs. Plot error versus coverage, measure missed detections and false alarms for drift checks where labeled shifts exist, and verify that fallback preserves service KPIs. Calibrate thresholds on validation data, not the locked test set. Check that model decisions change sensibly when relevant inputs change and remain stable under benign measurement noise.
+- Replay representative and incident traces with recorded event order and timing, using the release model and the baseline side by side. Replay verifies observation and decision behavior, not how the network would respond to a different action. For policies evaluated from logged actions, use off-policy estimates only where action coverage and logging assumptions hold; mark unsupported actions as unevaluable.
+- In closed-loop simulation, let actions change future traffic, radio state, and neighbor load. Check feedback stability, recovery time, action limits, and interactions with existing SON/RIC controllers; include conflicting policies, repeat decisions, and delayed measurements. Where feasible, verify hard invariants on the action guardrails and complement average-case tests with worst-case scenario search.
+- If an LLM is used for operator recommendations, test factual grounding against approved runbooks and telemetry, stale or conflicting evidence, abstention, structured output validation, and human approval. Keep free-form output out of direct RAN control paths.
+
+### 4. Prove integration and recovery on the target stack
+
+- Progress from software-in-the-loop to hardware-in-the-loop and a production-like staging RAN. Use UE and traffic emulators, channel emulators or authorized shielded RF testing, and representative RU/DU/CU, edge hardware, and controller versions. Verify applicable 3GPP and O-RAN interface behavior for the deployed releases, including contracts, timing, partial upgrades, and multi-vendor interoperability.
+- Run end-to-end peak, burst, and soak tests on the packaged model, including quantized or accelerated builds. Measure full telemetry-to-action latency and jitter (including tail latency and deadline-miss rate), synchronization, CPU/GPU/memory, power, and any impact on other workloads. Check cold start, restart, and upgrade behavior, not just average inference speed.
+- In an isolated testbed, exercise missing or reordered telemetry, clock drift, failed dependencies, overloaded inference, and disconnected controllers. Verify input/schema validation, model provenance and integrity, least-privilege access, and auditable model decisions without logging sensitive payloads.
+- Keep operator-owned action bounds, rate limits, expiry, and conflict arbitration outside the model. Rehearse manual override, automatic fallback, and rollback to the known-good policy, including removal of persistent actions and reconciliation of controller state. Measure time to detect, stop, and restore service; verify the fallback still works when the model or monitoring is unavailable.
+
+### 5. Separate pre-traffic evidence from production exposure
+
+| Stage | What it proves and what it does not |
+| --- | --- |
+| Offline, simulation, and isolated staging | No production exposure. Validate envelope coverage, stability, integration, and recovery. Passing permits an operator review; it does not authorize control of live traffic. |
+| Read-only shadowing, only after operator approval | Evaluate on mirrored live telemetry with no actuation permissions and isolated or bounded resources. Check live feature parity, freshness, latency, guardrail rejects, abstentions, and disagreements with the baseline. Shadowing cannot measure the causal effect of actions never applied, and is not required if live data access is disallowed. |
+| Limited live canary, only after pre-deployment sign-off | This is **production deployment**, not a pre-traffic test. Limit to approved sites, actions, and exposure windows; exclude protected services or sites as required. Use independent abort monitoring, an on-call owner, and rehearsed rollback. Expand only following explicit review. |
+
+For a live comparison, randomize by independent cell clusters when feasible to account for mobility and interference spillover. Otherwise use matched controls or a switchback with washout periods where carryover can be controlled. Account for load, seasonality, concurrent changes, and delayed outcomes. Monitor leading signals (telemetry freshness, inference deadlines, fallback rates) and outcomes (service KPIs and neighbor impact). Stop on a guardrail breach or loss of monitoring; inconclusive results are not grounds for expansion.
+
+### 6. Tie the release decision to service protection and ROI
+
+| Gate | Required evidence |
+| --- | --- |
+| Service protection | Operator-defined hard limits and non-inferiority margins met for availability, drops, mobility, latency, protected services, and cell-edge users as applicable. Compare each critical slice with the baseline, not just the network average. |
+| Model utility | The predeclared minimum gain on the primary KPI is supported by uncertainty bounds appropriate to the stage; known failure modes, abstention behavior, and exclusions are documented. |
+| Operational readiness | Target-platform budgets met; alerts, overrides, and rollback rehearsed; versions of model, data, feature pipeline, runtime, configuration, and test evidence recorded. |
+| Economic case | Approved cost and benefit assumptions, conservative/base/upside estimates, sensitivity to adoption and traffic, and a plan to measure realized returns against the baseline. |
+
+- Translate KPI changes into measurable value: kWh saved times the applicable tariff, attributable capacity deferral where finance agrees it is realizable, or incident handling hours avoided times a fully loaded rate. Include compute, power, licensing, telemetry, integration, testing, monitoring, on-call support, retraining, and rollout costs. Avoid double counting and never trade a hard service guardrail for savings.
+- For a stated horizon, `ROI = (attributable benefits - incremental costs) / incremental costs` when incremental costs are positive. Report expected payback and key assumptions. Label offline and simulation estimates as forecasts; update them with controlled live evidence before claiming realized ROI.
+- Keep one release record with the operating envelope, baseline, test matrix, results and confidence intervals, open risks, abort thresholds, rollback evidence, and named RAN operations, model, privacy/security, and business approvers. Re-run affected gates when model, features, firmware, interfaces, control policies, or deployment scope changes.
+
+Reference points: [3GPP TR 38.843 (AI/ML for the NR air interface study)](https://portal.3gpp.org/desktopmodules/Specifications/SpecificationDetails.aspx?specificationId=3983), [O-RAN specifications](https://www.o-ran.org/specifications), and the [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework). Use the versions applicable to the operator stack; these references do not replace operator acceptance criteria.
