@@ -5,3 +5,7 @@ How the generated datasets are realistic and trustworthy for ingestion to AI Mod
 Live networks don't always provide enough examples of unusual events, such as interference, 
 unexpected traffic patterns, handover failures or network outages, 
 making it difficult to properly train and test AI models.
+
+## Simulation perspective
+How to combine synthetic scenarios with real network data, allowing teams/designers to generate __realistic training datasets__
+and safely reproduce varrying network conditions.
