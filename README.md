@@ -9,6 +9,7 @@ making it difficult to properly train and test AI models.
 ## Simulation perspective
 How to combine synthetic scenarios with real network data, allowing teams/designers to generate __realistic training datasets__
 and safely reproduce varrying network conditions.
+* I will do all simulation in Claude app.
 
 ## Pre-deployment validation playbook for AI in the RAN
 
