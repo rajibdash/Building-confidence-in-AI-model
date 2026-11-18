@@ -315,3 +315,474 @@ An LLM can help draft a scenario, generate test scaffolding, explain an evaluati
 | SMO and multi-vendor operations | Management/control interface correctness, telemetry/control message throughput, latency, partial failure, upgrade compatibility, and scale limits for the actual release and vendor mix. |
 
 These are candidate test dimensions, not universal KPIs or pass thresholds. Choose measures based on the model's real decision and the services it can affect. Report vendor-whitepaper results and other simulation results as scenario-specific until independently reproduced; require separate target-stack and controlled operational evidence for any production claim.
+
+## Whitepaper Digest: Remaining Details and Diagrams
+
+The previous section distilled vendor-neutral development practices from the repository whitepaper, *From RAN Simulation Digital Twins to the Self-Aware, Agentic RAN* (VIAVI Solutions, AI RSG Whitepaper 2.0, © 2026, 30 pages). This section records what that distillation left out: the industry context, the six deployment challenges and the responses the whitepaper attributes to its platform, the platform components, the Claude integration, the intent-to-deployment workflow, the autonomous behaviors and their KPIs, the reported use-case results, the stakeholder and autonomy-level views, and the source list. It follows the whitepaper's order, and page numbers refer to the PDF stored in this repository.
+
+All ten figures in the whitepaper are redrawn here as Mermaid diagrams so that they render inside this file; their labels follow the original figures. The numbers and product capabilities below are stated by the whitepaper or by the sources it cites. They are not independently verified here, the whitepaper itself notes that product specifications are subject to change without notice, and the cautions in the previous section still apply. Bracketed numbers such as [1] are the whitepaper's own citation numbers; the source index at the end of this section resolves them.
+
+### Executive summary and the trust problem (whitepaper pp. 2–5)
+
+- AI is described as reshaping the RAN faster than any earlier technology transition. The whitepaper cites NVIDIA's fourth annual State of AI in Telecommunications survey (2026), in which 90% of telecom operators report that AI is already increasing revenue and reducing costs [1].
+- Every major RAN vendor is said to have an AI-native roadmap, and 3GPP, the O-RAN Alliance, TM Forum, and the AI-RAN Alliance are embedding AI in the architecture of future mobile networks. Even so, most operators remain in pilot deployments or fragmented AI initiatives.
+- The stated bottleneck is no longer building AI models or algorithms; it is deploying them safely, repeatably, and at scale. Autonomous networks need trusted infrastructure for generating realistic training data, validating AI decisions, integrating applications across multi-vendor environments, and continuously improving intelligence throughout the AI lifecycle. What organizations lack is realistic data, scalable validation, repeatable testing, and efficient application development workflows.
+- The whitepaper positions the VIAVI TeraVM AI RAN Scenario Generator (AI RSG) as that infrastructure: more than a system-level simulator, it is presented as an AI engineering platform combining a high-fidelity RAN digital twin at city or network scale, synthetic and real-world data generation, application development tools, closed-loop AI validation, and intelligent assistants. Together with the Application Validation Engine (AVE), the App Twin Application Development Kit (ADK), and a Claude AI integration, it is aimed at operators, network equipment vendors, AI developers, research institutions, and governments moving from isolated AI experiments to production-ready autonomous networks.
+
+Four questions an operator has to answer before deploying AI into a live network (p. 5):
+
+1. Can we generate realistic data to train AI models?
+2. Can we safely test autonomous behavior before deployment?
+3. Can we objectively validate AI decisions against operational KPIs?
+4. Can we accelerate AI innovation without increasing operational risk?
+
+The whitepaper's position is that traditional network laboratories and live production environments cannot answer these at the scale AI-native networks require.
+
+**Figure 1. At a glance (whitepaper p. 4).** Eight headline figures, each with the source named on its tile.
+
+```mermaid
+---
+config:
+  layout: dagre
+  flowchart:
+    wrappingWidth: 175
+    nodeSpacing: 16
+    rankSpacing: 24
+---
+flowchart TB
+    A1["90%<br/>TELCOS REPORTING AI ROI<br/>NVIDIA Telecom Survey 2026 [1]<br/>1,000+ telecom professionals polled<br/>▲ up from prior year"]
+    A2["89%<br/>INCREASING AI SPEND 2026<br/>NVIDIA Telecom Survey 2026 [1]<br/>Up from 65% just 12 months prior<br/>▲ +24pp year-on-year"]
+    A3["$35B<br/>CUMULATIVE AI-RAN 2026-30<br/>Dell'Oro Group forecast [5]<br/>5-year cumulative revenue projection<br/>▲ Growing from $3B in 2025"]
+    A4["TRL 8<br/>COMMERCIAL SINCE 2020<br/>Production-proven platform<br/>30+ global customers, 5 continents<br/>✓ Technology Readiness Level 8"]
+    B1["20-40%<br/>ENERGY = NETWORK OPEX<br/>GSMA / Rohde & Schwarz [6,7]<br/>RAN consumes 60-80% of 5G energy<br/>Primary OpEx cost driver"]
+    B2["20-30%<br/>AI ENERGY SAVINGS POSSIBLE<br/>Market Research 2025 [8]<br/>Via dynamic scheduling and sleep modes<br/>✓ Validated in AI RSG lab"]
+    B3["1,000+<br/>SIMULATED CELLS / INSTANCE<br/>AI RSG platform specification<br/>Cluster mode: 100K cells, 1M+ UEs<br/>↗ Production-scale validation"]
+    B4["10-20%<br/>KPI IMPROVEMENT POST-AVE<br/>VIAVI lab validation<br/>Typical gain after AVE validation cycle<br/>✓ Objective closed-loop benchmarking"]
+    A1 ~~~ B1
+    A2 ~~~ B2
+    A3 ~~~ B3
+    A4 ~~~ B4
+    %% Blank row keeps GitHub's diagram controls clear of the last tile.
+    B4 ~~~ PAD["#160;<br/>#160;<br/>#160;<br/>#160;"]
+    style PAD fill:none,stroke:none
+```
+
+The journey the whitepaper describes (p. 5):
+
+| Stage | Characteristics |
+| --- | --- |
+| Today's networks | Reactive optimization, rule-based automation, and AI-assisted optimization. |
+| Self-Aware RAN | Networks continuously observe, predict, validate, and adapt using trusted AI. |
+| Agentic RAN | AI systems collaborate, reason, generate applications, optimize workflows, and autonomously execute operator intent within validated operational guardrails. |
+
+### The AI-RAN inflection point (whitepaper p. 6)
+
+- Mobile networks have moved through increasing levels of automation: fully manual optimization at first; then Self-Organizing Networks (SON), which automated specific functions such as mobility optimization and load balancing; then machine learning, which enabled predictive optimization in selected domains.
+- The next step is presented as different in kind. Instead of optimizing isolated parameters, the RAN continuously understands network state, predicts future behavior, reasons about competing objectives, validates alternative actions, and autonomously executes the best decision. The whitepaper calls this the transition toward the Self-Aware RAN.
+- Beyond it lies the Agentic RAN, in which AI systems collaborate, reason, generate workflows, build applications, and keep improving through closed-loop learning while staying aligned with operator intent. The whitepaper ranks this among the largest architectural changes since the introduction of LTE.
+- It quotes the NVIDIA survey's finding that network automation has overtaken customer experience as the top priority for AI investment, deployment, and ROI impact [1].
+
+**Figure 2. The evolution of mobile network intelligence (whitepaper p. 6).**
+
+```mermaid
+---
+config:
+  layout: dagre
+  flowchart:
+    wrappingWidth: 300
+    rankSpacing: 30
+---
+flowchart TB
+    M["MANUAL NETWORKS"] -.-> S["SON AUTOMATION"] -.-> A["AI-ASSISTED RAN"] -.-> W["SELF-AWARE RAN"] -.-> G["AGENTIC AI RAN"] -.-> N["INTENT-DRIVEN<br/>AUTONOMOUS NETWORKS"]
+```
+
+### Why AI adoption has stalled (whitepaper p. 7)
+
+The whitepaper observes that AI adoption is accelerating while production deployment remains limited.
+
+**Figure 3. Industry momentum (whitepaper p. 7).**
+
+```mermaid
+---
+config:
+  layout: dagre
+  flowchart:
+    wrappingWidth: 300
+    nodeSpacing: 30
+    rankSpacing: 24
+---
+flowchart TB
+    T1["54% [1]<br/>Operators using AI<br/>▲ 17% YoY"]
+    T2["$6–12M+<br/>Cost of a physical<br/>Open RAN lab"]
+    T3["100x<br/>Simulation Speed"]
+    T4["L5<br/>Ultimate Autonomous<br/>Network Target"]
+    %% Blank row keeps GitHub's diagram controls clear of the last tile.
+    T4 ~~~ PAD["#160;<br/>#160;<br/>#160;"]
+    style PAD fill:none,stroke:none
+```
+
+Industry research it cites:
+
+- 88% of operators are at L1–L3 on the TM Forum autonomy framework [2].
+- Only 17% of CSPs had achieved L3 for any domain by 2025 [3].
+- Energy costs represent 20–40% of mobile network OpEx, and AI can reduce them by 20–30% [6, 7, 8].
+- RAN antennas and base stations consume 60–80% of 5G energy, which makes AI sleep modes the key lever [7].
+- A physical lab for Open RAN validation costs $6–12M+ in CapEx on average [12].
+- 3GPP Release 18 (June 2024) is said to mandate AI/ML for energy saving, load balancing, and mobility [10].
+
+AI systems, according to the whitepaper, require:
+
+- massive quantities of realistic training data;
+- safe experimentation environments that do not put live subscribers at risk;
+- repeatable, objective validation before production deployment;
+- efficient development workflows that keep pace with AI/ML iteration cycles; and
+- continuous learning and model refresh as network conditions evolve.
+
+Its conclusion is that the shortage is one of infrastructure, not of AI algorithms: real production networks cannot provide these capabilities safely, and RAN simulation digital twins can.
+
+### Six deployment challenges and the stated platform responses (whitepaper pp. 8–9)
+
+Each challenge is paired with the resolution the whitepaper attributes to AI RSG. The responses are the vendor's description of its product, not independent findings.
+
+| Challenge | Problem described | Response attributed to AI RSG |
+| --- | --- | --- |
+| **Data quality and scarcity** | Models trained on unrepresentative data degrade significantly in production. Rare events and edge cases matter most for robustness, yet they cannot be collected safely from live networks in the volumes that reliable training needs. | The Hybrid Data Layer combines synthetic simulation scenarios with live OSS KPI exports, geographic data, traffic patterns, weather information, and mobility traces, and generates months of labeled RAN events in hours. Edge cases such as interference events, cell failures, and handover anomalies are created safely, repeatably, and on demand, giving AI-ready datasets without access to production subscribers. |
+| **No safe experimentation environment** | Application and algorithm errors affect live subscribers, and SLA breaches carry regulatory and commercial risk. Operations teams block production test access for unvalidated algorithms. Physical labs lack the RF scale and realism of a production network, and bugs found in production cannot be reproduced safely for root-cause analysis. | A city-scale digital twin simulating 1,000+ cells and over one million UEs runs entirely in isolated software with no subscriber risk. Deterministic seed replay reproduces any scenario exactly, which allows root-cause isolation. Cluster mode scales to 100,000 cells across 100 AI RSG instances. |
+| **Model drift** | Models trained on static datasets degrade as traffic patterns and network conditions evolve, and the simulation-to-production domain gap makes models behave differently once deployed. | The Hybrid Data Layer continuously ingests live OSS telemetry to keep scenarios aligned with real network behavior. AVE re-evaluates deployed models against current KPI benchmarks, and closed-loop feedback triggers retraining workflows automatically when performance drifts outside acceptable bounds. |
+| **Hallucination risk in LLM-assisted workflows** | An LLM that generates network configurations without validation guardrails can produce invalid parameter definitions or unsafe operational ranges, with potentially serious consequences if they are applied directly to production network elements. | Claude operates inside a constrained tool-use framework and calls validated AI RSG functions with typed, schema-validated parameters; it does not generate free-form network configurations. All LLM outputs pass schema validation before ingestion, human approval gates are enforced at simulation launch and at deployment boundaries, and AVE provides KPI-based verification that is independent of, and entirely outside, the language model. |
+| **Regulatory constraints** | ETSI ENI and 3GPP Release 18 are said to require auditable AI decisions, and data protection regulations restrict the use of subscriber data in AI training pipelines. | AVE produces structured, auditable pass/fail reports for every AI decision, covering traceability without manual documentation. The Hybrid Data Layer supports fully synthetic modes with no subscriber PII, and air-gapped deployment is available for classified and defense environments. |
+| **Multi-vendor integration complexity** | The multi-vendor architecture of Open RAN multiplies interface failure points, and manual interface testing cannot keep pace with software release cadence. | AI RSG provides an always-on O-RAN counterpart that simulates the E2AP, O1 NETCONF, and A1 interfaces and plugs into CI/CD pipelines for automated regression testing on every software commit, compressing interface validation from weeks to hours. The O-RAN Alliance's 2024 PlugFest program is cited as an indication of the scale of multi-vendor integration testing [11]. |
+
+### From digital twins to an AI engineering platform (whitepaper p. 10)
+
+- Traditional digital twins reproduced network behavior; the whitepaper says the next generation anticipates it.
+- AI RSG is described as having evolved into an integrated AI engineering platform that supports every stage of the AI lifecycle: scenario generation, AI-ready dataset creation, reinforcement learning, deep learning, app development, AI benchmarking, closed-loop validation, AI-assisted optimization, and continuous deployment. The stated aim is continuous AI innovation, not validation of a single model.
+- The rationale given for a RAN simulation digital twin is that AI systems cannot learn safely from production networks alone; they need reproducible, scalable environments in which they can be trained, challenged, and validated before deployment.
+
+### The TeraVM AI RSG engine (whitepaper pp. 11–15)
+
+**Figure 4. The TeraVM AI RSG engine (whitepaper p. 11).** The digital twin is at the center, and each surrounding element is tied to it by one verb.
+
+```mermaid
+---
+config:
+  layout: dagre
+  flowchart:
+    wrappingWidth: 300
+    nodeSpacing: 40
+    rankSpacing: 40
+---
+flowchart TB
+    ADK{{"ADK<br/>Agent Development Kit"}}
+    CLAUDE{{"Claude AI<br/>Accelerated AI Innovation"}}
+    RSG{{"Simulate<br/>AI RSG<br/>Digital Twin"}}
+    ORAN{{"O-RAN / Purpose Built<br/>REST | E2 | O1 | A1<br/>Purpose built adaptors"}}
+    AVE{{"AVE<br/>App Validation Engine"}}
+    ADK ---|Measure| RSG
+    CLAUDE -.-|Configure| RSG
+    RSG -.-|Standardize| ORAN
+    RSG ---|Score| AVE
+    %% Blank row keeps GitHub's diagram controls clear of the AVE element.
+    AVE ~~~ PAD["#160;"]
+    style PAD fill:none,stroke:none
+```
+
+Figure 4 expands ADK as Agent Development Kit, whereas the body text calls it the App Twin Application Development Kit. It shows the interface adaptors (REST, E2, O1, A1, and purpose-built adaptors) as an element of their own and does not show the Hybrid Data Layer that the component table lists.
+
+| Component | Primary role | Business value claimed |
+| --- | --- | --- |
+| AI RAN Scenario Generator (AI RSG) | High-fidelity RAN digital twin at city or network scale, and scenario generation | Realistic, scalable environments for AI training, testing, and simulation |
+| Hybrid Data Layer | AI-ready dataset generation | Synthetic scenarios combined with real network data to improve AI model accuracy |
+| App Twin ADK | Python-based application development sandbox | Faster xApp and rApp development, rapid prototyping, CI/CD integration, and reproducible testing |
+| Application Validation Engine (AVE) | Closed-loop AI validation | Objective benchmarking of AI decisions against operator KPIs and deployment guardrails |
+| Claude AI integration | Intelligent engineering assistant | Natural-language scenario generation, ADK workflow creation, result analysis, and higher developer productivity |
+
+The whitepaper calls the engine four tightly integrated components (AI RSG, the Hybrid Data Layer, AVE, and the App Twin ADK; p. 13) and treats the Claude integration as an accelerator layer on top of them (p. 17).
+
+- **Simulation scope (pp. 12–13).** Cells and UEs at city scale (p. 12 lists 100k+ cells and 1M+ UEs; p. 13 says thousands of cells and millions of users), dynamic mobility, Massive MIMO, beamforming, RF propagation, traffic behavior, O-RAN interfaces, multi-vendor environments, command and control operations, mass event handling, anomaly simulation and injection, and edge-case scenarios.
+- **Deployment form (p. 12).** Software-based, containerized, cloud-native, and quickly deployable without dedicated hardware. Offline execution runs at up to 100× real-time speed for rapid experimentation and large-scale reinforcement learning [17].
+- **Hybrid Data Layer (p. 13).** Starts from the premise that the quality of an AI model is determined by the quality of its training data. It combines synthetic scenarios with historical and live network KPIs, geographical information, weather, traffic patterns, mobility trends, and operational telemetry, producing datasets intended to bridge the gap between simulation and production networks.
+- **AVE (p. 14).** Turns simulation outputs into objective AI evaluation in place of manual review of thousands of KPIs. It automatically measures goal achievement, energy savings, throughput, coverage, mobility stability, QoE, and SLA compliance; benchmarks multiple AI models simultaneously; and produces structured pass/fail results suitable for CI/CD pipelines. Typical deployments are said to show KPI improvements of 10–20% after AI RSG and AVE validation.
+- **App Twin ADK (p. 14).** A Python-based SDK that extends the digital twin into an AI development environment. Developers prototype xApps and rApps with the same business logic as the production applications, run them locally without specialized hardware, and integrate them into existing Python AI/ML workflows. It supports GitLab CI/CD, pytest, batch parameter sweeps, deterministic seed replay, and rapid offline execution, so that iterating, reproducing issues, and validating changes takes seconds rather than days. The whitepaper claims this dramatically reduces development cost while enabling repeatable engineering practices.
+
+Key differentiators (p. 15):
+
+| Differentiator | Claim |
+| --- | --- |
+| Trusted AI infrastructure | The high-fidelity RAN simulation digital twin provides safe, repeatable environments where AI can learn without affecting production networks. |
+| AI-native development | The App Twin ADK lets developers prototype, train, test, and refine AI applications with familiar Python workflows and continuous integration pipelines. |
+| Intelligent engineering | Claude AI turns complex simulation environments into intent-driven, natural-language workflows, reducing development complexity and accelerating innovation. |
+| Objective validation | AVE measures every AI decision against operator-defined objectives, creating confidence before deployment into live networks. |
+
+Customer outcomes the whitepaper lists (p. 15): faster AI-RAN application development through software-based digital twins and local development environments; lower deployment risk through objective, closed-loop AI validation; high-quality datasets for machine learning and reinforcement learning at scale; validation of xApps, rApps, and AI models before production deployment; AI development integrated into existing DevOps and CI/CD workflows; and shorter innovation cycles with network reliability and service assurance maintained.
+
+### Claude AI as the intelligence layer (whitepaper pp. 16–17)
+
+- LLMs are presented as the next major evolution of AI-RAN engineering. Claude is said to turn AI RSG from a simulation platform into an intent-driven engineering environment that any network engineer can use, not only RAN simulation specialists: engineers state objectives in natural language instead of learning the simulation tooling.
+- It guides the build by prompting for key parameters, such as the number of UEs, whether to apply a mobility pattern, and which frequency bands to model, so that a scenario is complete without schema expertise.
+- Across the development lifecycle it also generates ADK Python scripts, explains KPI results, performs root-cause analysis, recommends optimization strategies, summarizes AVE validation reports, creates parameter sweeps, assists with debugging, and lowers the expertise barrier for AI-RAN development.
+
+Worked example (p. 16). For the request "Create a 50-cell dense urban scenario to evaluate an energy-saving xApp under heavy traffic load, with 20% anomalous mobility events", Claude is said to generate four artifacts:
+
+| Generated artifact | Contents |
+| --- | --- |
+| Validated YAML scenario definition | Cell topology, UE density, traffic profile, and mobility seed |
+| ADK Python workflow | Simulation setup, anomaly injection, and KPI collection |
+| AVE validation configuration | Energy KPI targets and QoS guardrails |
+| Execution summary | Optimization recommendations |
+
+Questions the whitepaper answers about the integration (p. 17):
+
+| Question | Answer given |
+| --- | --- |
+| What happens if Claude is unavailable? | AI RSG is fully functional without it. Scenario generation, ADK development, and AVE validation run through their native interfaces: YAML configuration files, the Python SDK, and the REST API. Claude is an accelerator layer, not an architectural dependency. If the Claude API is temporarily unreachable, AI RSG falls back automatically to guided, template-based scenario configuration, so active development and validation work is not interrupted. |
+| Is the platform tied to Anthropic or to a single LLM? | No. The LLM integration layer is model-agnostic by design: its abstraction layer supports any LLM reachable through an OpenAI-compatible or Anthropic API, including open-source models deployed on-premises for data-sovereignty or air-gapped requirements. Claude is the validated reference integration, named in the AI RSG documentation and recommended for production use. |
+| Can Claude be suggested as an example LLM? | Yes. Claude through the Anthropic API requires the TVM6245 license add-on and AI RSG v2.8 or later. It is the shipping default and the integration VIAVI has qualified end to end, recommended for its structured tool-use framework, reliable structured output, and enterprise API availability. |
+
+### From intent to deployment (whitepaper p. 18)
+
+The whitepaper contrasts two development models.
+
+**Figure 5. Traditional workflow (whitepaper p. 18).** Sequential and manual; each cycle takes days and needs specialized lab access.
+
+```mermaid
+---
+config:
+  layout: dagre
+  flowchart:
+    nodeSpacing: 24
+    rankSpacing: 30
+---
+flowchart LR
+    C["Configure"] -.-> T["Test"] -.-> A["Analyze"] -.-> M["Modify"] -.-> R["Repeat"]
+    %% Blank row keeps GitHub's diagram controls clear of the last step.
+    PAD["#160;<br/>#160;<br/>#160;<br/>#160;"]
+    style R fill:#4b2a85,stroke:#4b2a85,color:#ffffff
+    style PAD fill:none,stroke:none
+```
+
+**Figure 6. Agentic workflow (whitepaper p. 18).** Continuous, automated, and closed-loop.
+
+```mermaid
+---
+config:
+  layout: dagre
+  flowchart:
+    nodeSpacing: 24
+    rankSpacing: 30
+---
+flowchart LR
+    I["Intent"] -.-> G["AI Generation"] -.-> D["Digital Twin"] -.-> V["Validation"] -.-> N["AI Insights"]
+    N -. "Continuous Improvement Loop" .-> I
+    %% Blank row keeps GitHub's diagram controls clear of the last step.
+    PAD["#160;<br/>#160;<br/>#160;<br/>#160;"]
+    style N fill:#0b7a70,stroke:#0b7a70,color:#ffffff
+    style PAD fill:none,stroke:none
+```
+
+The agentic workflow is illustrated with one operator objective, "Reduce energy consumption by 30% while maintaining QoE above the agreed SLA":
+
+| Step | What happens |
+| --- | --- |
+| Claude generates | The YAML scenario definition, the ADK Python workflow, and the AVE KPI targets, in seconds. |
+| AI RSG builds and runs | The city-scale digital twin executes at 10× real time. The Hybrid Data Layer injects representative traffic patterns, including edge-case anomaly events. |
+| ADK measures | The xApp or rApp logic executes against the simulation. Parameter sweeps identify the Pareto-optimal configuration across competing objectives. |
+| AVE certifies | A structured pass/fail report is generated and the KPI improvement is verified against operator-defined targets. The CI/CD gate passes or fails with specific, actionable remediation guidance. |
+| Claude analyzes | Root-cause analysis of any failures, optimization recommendations for the next iteration, and a deployment readiness summary. |
+
+The claim is that the whole lifecycle, from engineer intent to a deployment-ready AI application, becomes closed-loop, automated, and reproducible without touching a live cell.
+
+### Autonomous network behaviors (whitepaper pp. 19–20)
+
+The whitepaper defines the Self-Aware RAN by intelligent behaviors that AI continuously refines, not by isolated optimization applications.
+
+**Figure 7. Autonomous network behaviors and their KPIs (whitepaper p. 19).**
+
+```mermaid
+---
+config:
+  layout: dagre
+  flowchart:
+    wrappingWidth: 360
+    nodeSpacing: 24
+    rankSpacing: 24
+---
+flowchart TB
+    EN["ENERGY<br/>Optimize energy consumption<br/>across the network to reduce<br/>operational costs and carbon footprint."] --- ENK["KPIs<br/>Energy Consumption (kWh)<br/>Energy Savings (%)<br/>CO₂ Emissions Reduced (tons)"]
+    MO["MOBILITY<br/>Ensure seamless connectivity<br/>and consistent performance for<br/>users on the move."] --- MOK["KPIs<br/>Handover Success Rate (%)<br/>Handover Drop Rate (%)<br/>User Throughput on the Move (Mbps)"]
+    BM["BEAM MANAGEMENT<br/>Focus radio signals towards users<br/>to improve coverage, capacity and<br/>spectral efficiency."] --- BMK["KPIs<br/>Beamforming Gain (dB)<br/>Spectral Efficiency (bps/Hz)<br/>Coverage Improvement (%)"]
+    QE["QoE<br/>Deliver a superior Quality of Experience<br/>by meeting user expectations across<br/>services and applications."] --- QEK["KPIs<br/>QoE Score (0–100)<br/>Video Experience Score (MOS)<br/>App/Page Load Time (s)"]
+    MM["MASSIVE MIMO<br/>Leverage large antenna arrays to deliver<br/>higher capacity, better reliability and<br/>improved spectrum efficiency."] --- MMK["KPIs<br/>Throughput Improvement (x)<br/>UE Capacity (Users/Sector)<br/>Reliability (BLER %)"]
+    SH["SELF-HEALING<br/>Automatically detect, diagnose and<br/>resolve issues to minimize impact<br/>and maintain network performance."] --- SHK["KPIs<br/>Incident Detection Time (s)<br/>Self-Healing Success Rate (%)<br/>Service Restoration Time (s)"]
+    ENK ~~~ QE
+    MOK ~~~ MM
+    BMK ~~~ SH
+    %% Blank row keeps GitHub's diagram controls clear of the last KPI box.
+    SHK ~~~ PAD["#160;<br/>#160;<br/>#160;<br/>#160;"]
+    classDef kpi stroke-dasharray: 4 3
+    class ENK,MOK,BMK,QEK,MMK,SHK kpi
+    style PAD fill:none,stroke:none
+```
+
+Capability areas that AI RSG is said to support for development and validation (p. 20): energy management, experience assurance, mobility intelligence, Massive MIMO optimization, beam management, interference mitigation, network slice assurance, traffic steering, FR3 optimization, multi-RAT spectrum sharing, self-healing, and predictive maintenance. Each is said to benefit from realistic datasets, reproducible testing, and objective KPI validation before deployment.
+
+What the platform delivers, as summarized on p. 20: a RAN simulation digital twin at city or network scale, AI data generation, an application sandbox, AI validation, an LLM engineering assistant, CI/CD integration, and production readiness.
+
+### Use cases and reported results (whitepaper pp. 21–22)
+
+**Figure 8. Headline results shown with the energy optimization use case (whitepaper p. 21).**
+
+```mermaid
+---
+config:
+  layout: dagre
+  flowchart:
+    wrappingWidth: 300
+    nodeSpacing: 30
+    rankSpacing: 24
+---
+flowchart TB
+    U1["10–20%<br/>Energy Savings"]
+    U2["99.9%<br/>QoS Maintained"]
+    U3["100x<br/>Simulation Speed"]
+    U4["4 Hrs<br/>Validation Time"]
+    %% Blank row keeps GitHub's diagram controls clear of the last tile.
+    U4 ~~~ PAD["#160;<br/>#160;<br/>#160;"]
+    style PAD fill:none,stroke:none
+```
+
+| Use case | What was done | Reported result |
+| --- | --- | --- |
+| **AI-driven energy optimization** | AI-driven rApps reduce RAN energy consumption while maintaining quality of service. The digital twin emulates dense urban environments with realistic traffic, mobility, and controlled anomalies, and AVE benchmarks AI decisions against baseline models for iterative refinement before deployment. | Double-digit energy savings with user experience maintained [13]. The annex gives a 10–20% energy reduction for the AI rApp against a rule-based baseline with QoS within SLA, and 15–30% overall savings with AI intent-based control (65% off-peak, 25% at peak load). |
+| **Predictive beam management** | Deep learning models predict the optimal beam before signal degradation occurs, which reduces signaling overhead [14]. Predictive beam switching is validated in the digital twin before deployment. | Up to 20% higher system throughput, because less control overhead frees radio resources for data [4]. The annex adds up to 16% additional uplink capacity and fewer beam failure events, demonstrated with a Tier-1 Japanese operator at MWC Barcelona 2026. |
+| **AI-native Massive MIMO** | Integration with the NVIDIA Aerial Omniverse Digital Twin models site-specific propagation with ray tracing, supporting advanced beamforming, CSI optimization, interference mitigation, and MU-MIMO scheduling under realistic RF conditions. | No figure given. |
+| **O-RAN CI/CD** | An always-on O-RAN counterpart validates the E2AP, O1 NETCONF, and A1 interfaces inside CI/CD pipelines, with interface regression testing on every software commit. | Shorter development cycles; interface validation compressed from weeks to hours (p. 9). |
+| **AI dataset generation** | Researchers and AI developers generate labeled RAN events from repeatable simulation scenarios. | Hundreds of thousands of labeled events, with much less time needed to build robust AI training datasets. |
+| **Multi-RAT spectrum sharing** | 6G FR3 spectrum is introduced alongside existing 5G FR1 deployments. Static allocation splits bandwidth equally regardless of conditions and leaves capacity unused. A reinforcement learning approach (RL-PPO) to dynamic spectrum allocation was validated on a digital twin of a city center with FR1 and FR3 cells, with what-if analysis across dozens of scenario variants to find when dynamic allocation helps. | Spectral efficiency 4.4% above a static 50/50 baseline in standard conditions, and 13.7% above it in a high-contrast mobility scenario in which users move in opposing directions across FR1/FR3 coverage boundaries [15]. |
+| **SMO scalability testing** | The SMO layer manages rApps, xApps, and the non-RT RIC across potentially hundreds of thousands of cells, a scale that cannot be tested in a physical laboratory. Cluster mode runs 100 AI RSG instances on 500 virtual CPU cores. | 100,000 cells and one million UEs simulated simultaneously [16]. PM/CM data flows from AI RSG to the SMO and non-RT RIC are validated end to end, O1 NETCONF interfaces are tested under full load, and energy-saving rApp training runs at production scale. |
+| **Coverage and capacity optimization (CCO)** | CCO is a 3GPP Release 19 AI/ML use case that extends the Release 18 work on load balancing and mobility. It balances coverage extent, signal quality, capacity distribution, and inter-cell interference in topologies where a parameter change in one area has side effects elsewhere. City-scale simulation uses site-specific propagation from NVIDIA Aerial Omniverse Digital Twin ray tracing, real traffic demand models, and full Massive MIMO behavior. Remote electrical tilt, antenna azimuth, and power settings are swept across hundreds of variants, with AI identifying the optimal configuration. | Expected RSRP coverage improvement and capacity uplift are quantified before any live rollout; no figure given. |
+
+### Stakeholders (whitepaper p. 23)
+
+**Figure 9. Supporting every AI-RAN stakeholder (whitepaper p. 23).**
+
+```mermaid
+---
+config:
+  layout: dagre
+  flowchart:
+    wrappingWidth: 900
+    nodeSpacing: 12
+    rankSpacing: 24
+---
+flowchart TB
+    P1["01<br/>Platform/Solution<br/>What you sell"]
+    P2["02<br/>CSPs/MNOs<br/>Mobile operators"]
+    P3["03<br/>RAN Vendors<br/>Infra providers"]
+    P4["04<br/>App Devs<br/>App builders"]
+    P5["05<br/>Innovators<br/>Research/uni"]
+    P6["06<br/>Defense<br/>Military/Gov"]
+    BN["AI RSG + ADK + AVE + Claude AI - The complete RAN Simulation Digital Twin<br/>for CSPs, Vendors, App Developers, Innovators, and Defense"]
+    P1 & P2 & P3 & P4 & P5 & P6 ~~~ BN
+    %% Blank row keeps GitHub's diagram controls clear of the tiles.
+    BN ~~~ PAD["#160;<br/>#160;"]
+    style BN fill:#4b2a85,stroke:#4b2a85,color:#ffffff
+    style PAD fill:none,stroke:none
+```
+
+| Stakeholder | Use described |
+| --- | --- |
+| Communications service providers | Validate AI safely before deployment, optimize live networks without risking SLAs, and accelerate progress toward Level 5 fully autonomous networks. |
+| Network equipment manufacturers | Interoperability testing, standards validation, regression testing, and AI benchmarking within CI/CD pipelines. |
+| xApp and rApp developers | Prototype applications locally, train AI models, inject anomalies, benchmark performance, and iterate rapidly in the ADK sandbox. |
+| Research institutions | Generate reproducible datasets, publish repeatable experiments, and support standards development. |
+| Government and defense | Operate fully air-gapped digital twins for private 5G, mission-critical communications, and electronic warfare resilience testing. |
+
+### The road to autonomous networks (whitepaper p. 24)
+
+The TM Forum Autonomous Networks framework defines the progression from manual operation (L0) to fully autonomous, intent-driven networks (L5) [9]. The whitepaper assigns AI RSG a role at each level.
+
+**Figure 10. The road to autonomous networks, TM Forum L0–L5 (whitepaper p. 24).** For each level, the operating model is followed by the role claimed for AI RSG.
+
+```mermaid
+---
+config:
+  layout: dagre
+  flowchart:
+    wrappingWidth: 400
+    nodeSpacing: 10
+    rankSpacing: 20
+---
+flowchart TB
+    H0["L0 - Manual<br/>O&M"] --- D0["All operations<br/>driven by humans.<br/>Manual config,<br/>troubleshoot,<br/>and optimize."] --- R0["AI RSG:<br/>Validate scripts<br/>vs reference gNB.<br/>No hardware<br/>needed"]
+    H1["L1 - Assisted<br/>O&M"] --- D1["Script tools<br/>assist engineers.<br/>Humans in loop<br/>for all decisions<br/>and actions."] --- R1["AI RSG:<br/>Always-on O-RAN<br/>counterpart in<br/>every CI/CD<br/>commit pipeline"]
+    H2["L2 - Partial<br/>Autonomy"] --- D2["Automated<br/>monitoring, some<br/>self-healing.<br/>AI flags issues;<br/>humans decide."] --- R2["AI RSG:<br/>AVE validates<br/>closed-loop xApps<br/>at city scale<br/>before production."]
+    H3["L3 - Conditional<br/>Autonomy"] --- D3["AI closed-loop for<br/>defined scenarios.<br/>Human approval<br/>required for<br/>exceptions."] --- R3["AI RSG:<br/>ADK generates<br/>100K+ labeled<br/>RAN events to<br/>train ML models."]
+    H4["L4 - High<br/>Autonomy"] --- D4["Near-full<br/>automation across<br/>many domains.<br/>AI decides;<br/>humans set intent."] --- R4["AI RSG:<br/>Test autonomous<br/>xApp decisions<br/>against 10,000-UE<br/>scenarios."]
+    H5["L5 - Full<br/>Autonomy"] --- D5["100% autonomous<br/>and intent-driven.<br/>No human<br/>intervention.<br/>Ultimate vision."] --- R5["AI RSG:<br/>Validate AI-native<br/>RAN designs vs<br/>3GPP Rel-18/19<br/>and O-RAN specs."]
+    %% The blank lines under the footnote keep GitHub's diagram controls clear of the L5 column.
+    FN["Framework: TM Forum Autonomous Networks L0-L5 [9]<br/>#160;<br/>#160;<br/>#160;<br/>#160;"]
+    R0 & R1 & R2 & R3 & R4 & R5 ~~~ FN
+    classDef l0 fill:#6b6b6b,stroke:#6b6b6b,color:#ffffff
+    classDef l1 fill:#123a8c,stroke:#123a8c,color:#ffffff
+    classDef l2 fill:#0077a8,stroke:#0077a8,color:#ffffff
+    classDef l3 fill:#b8520f,stroke:#b8520f,color:#ffffff
+    classDef l4 fill:#0b7a70,stroke:#0b7a70,color:#ffffff
+    classDef l5 fill:#4b2a85,stroke:#4b2a85,color:#ffffff
+    class H0,R0 l0
+    class H1,R1 l1
+    class H2,R2 l2
+    class H3,R3 l3
+    class H4,R4 l4
+    class H5,R5 l5
+    style FN fill:none,stroke:none
+```
+
+The whitepaper lists the stages the platform supports as assisted AI development, partial autonomy, conditional autonomy, high autonomy, and a fully autonomous AI-native RAN. It argues that at every maturity level operators need a trusted environment where AI systems can learn safely before they influence production networks, and sums this up as: every level of autonomy depends on trust, and trust depends on validation.
+
+### Whitepaper conclusion (whitepaper p. 25)
+
+- The future RAN is defined by continuously learning, intent-driven systems that understand their environment, predict future conditions, validate alternative actions, and adapt network behavior autonomously, not by isolated optimization applications.
+- Reaching it takes trusted infrastructure for AI engineering as well as intelligent algorithms.
+- The combination of the RAN simulation digital twin, AI-ready datasets, the App Twin ADK, AVE, and Claude-powered assistance is presented as a complete platform for developing, validating, and operationalizing AI-native RAN.
+- The claimed result is a model of network innovation that replaces risky field experimentation with reproducible digital engineering, accelerates AI deployment through objective validation, and gives operators, vendors, developers, and researchers a practical path toward the Self-Aware, Agentic RAN.
+- The closing message is that AI-native networking should be not only autonomous but trusted, validated, collaborative, and continuously learning.
+
+### Source index (whitepaper Annex A, pp. 26–29)
+
+The annex states that all VIAVI validation results in the whitepaper are based on AI RSG simulation and documented in VIAVI internal technical reports, and that third-party sources are cited as published. The web addresses of the public sources are printed in the annex and are not repeated here.
+
+| No. | Group | Source | What the whitepaper cites it for |
+| --- | --- | --- | --- |
+| [1] | Industry research and market data | NVIDIA, State of AI in Telecommunications 2026 Survey (fourth annual; 1,000+ telecom professionals globally; published February 19, 2026) | 90% of operators report AI increasing revenue and reducing costs; 89% plan to increase AI spending; 65% say AI is the primary force behind network automation efforts; 88% place themselves at L1–L3 on the TM Forum framework. |
+| [2] | Industry research and market data | RCR Wireless, analysis of the NVIDIA survey (published February 19, 2026) | 88% of organizations place themselves between Level 1 and Level 3 on the TM Forum autonomy framework. |
+| [3] | Industry research and market data | MapYourTech, The Six Levels of Autonomous Networks: L0 to L5 (published May 29, 2026) | TM Forum survey data from 2025: 17% of CSPs had achieved L3 for at least one operational domain, and 46% were targeting L3 as a near-term goal. |
+| [4] | Industry research and market data | VIAVI Solutions with a Tier-1 Japanese operator, AI-Driven Predictive Beam Management (MWC Barcelona 2026 demonstration materials; VIAVI internal) | Up to 20% throughput improvement and up to 16% additional uplink capacity. |
+| [5] | Industry research and market data | Dell'Oro Group, Level 4 Autonomous RAN: From Vision to Early Reality (published June 2026); also reported by Mobile World Live | Cumulative AI-RAN revenue projected to reach $35 billion over the five years to 2030. |
+| [6] | Energy and network OpEx data | GSMA Intelligence, Green networks: part of the fabric, but still not everywhere (published August 7, 2025); Rohde & Schwarz, GSMA, and STL Partners figures are listed under the same entry | GSMA Intelligence: energy costs are still 15–20% of OpEx on average and higher in some 5G networks, and more efficient equipment can save up to 20–30% of energy. Rohde & Schwarz: energy usage averages 20–40% of OpEx. GSMA, 5G-Era Mobile Network Cost Evolution: energy is 32% of TCO in 5G against 23% in 4G. STL Partners: RAN energy costs are nearly 50% of total RAN OpEx. |
+| [7] | Energy and network OpEx data | Rohde & Schwarz, Network Energy Saving (NES) analysis; an ISA blog citing GSMA and a VIAVI Solutions learning-center article are listed under the same entry | O-RAN radio units account for 60–80% of the total energy consumption of a 5G mobile network. ISA and GSMA: the RAN consumes 73% of network energy, dominated by radio units and base stations. VIAVI: over 70% of 5G network energy is consumed by RAN antennas, radio units, and base stations. |
+| [8] | Energy and network OpEx data | Market Intelo, AI for RAN Energy Savings Market Research Report 2034 (published June 2026) | AI-powered optimization can reduce 5G power consumption by 20–30%; an estimated 3–4 million additional base stations globally by 2034; 25% energy savings equates to roughly $150–200 million in annual electricity cost reductions. |
+| [9] | Standards and regulatory references | TM Forum IG1230, Autonomous Networks Technical Architecture | Defines the L0–L5 autonomous networks framework; adopted by 30+ operators globally. |
+| [10] | Standards and regulatory references | 3GPP Release 18, AI/ML for NG-RAN | First formal 5G-Advanced specification package (protocol freeze June 2024). AI/ML use cases specified: network energy saving, load balancing, and mobility optimization. Release 19 extends to network slicing and coverage and capacity optimization (CCO). The annex marks one supporting IEEE Communications Society overview page as not found. |
+| [11] | Standards and regulatory references | O-RAN Alliance, PlugFest 2024 program; also an O-RAN Alliance press release of March 2025 | The Fall 2024 PlugFest began in August with 31 hosts in 24 labs around the world; co-hosted by 29 operators, OTICs, and academic and research institutions in 28 labs globally. |
+| [12] | Standards and regulatory references | Physical Open RAN lab cost reference: NTIA Open RAN Test and Measurement Program (VALOR), 2025, and O-RAN Alliance Testing WP, April 2025 | Average physical test bed setup of $6–12M, with a 6–12 month procurement lead time. |
+| [13] | VIAVI internal sources | VIAVI AI RSG lab results, Energy Saving rApp (2024) | 10–20% energy reduction with the AI rApp against a rule-based baseline, with QoS maintained within SLA; also 15–30% overall savings with AI intent-based control (65% off-peak, 25% at peak load). |
+| [14] | VIAVI internal sources | VIAVI with a Tier-1 operator, AI-Driven Predictive Beam Management, MWC Barcelona 2026 | Up to 20% throughput improvement; up to 16% additional uplink capacity from freed control overhead; fewer beam failure events through prediction before signal degradation. |
+| [15] | VIAVI internal sources | VIAVI with a leading RAN vendor, MRSS RL-PPO Digital Twin Validation (2025) | Spectral efficiency +4.4% in the standard scenario and +13.7% in the opposite-mobility scenario; validated on the AI RSG digital twin with realistic traffic and presented at an industry workshop. |
+| [16] | VIAVI internal sources | VIAVI AI RSG SMO Stress Test (2025) | 100K cells and 1M UEs validated in cluster mode (100 AI RSG instances, 500 vCores); full PM/CM data flows validated; O1 NETCONF and "3PP" YANG-based interfaces tested. |
+| [17] | VIAVI internal sources | VIAVI TeraVM AI RSG Product Documentation (v2.9, due June 2026) | Platform architecture, the Claude TVM6245 licence, and cluster mode specifications; Claude integration available from AI RSG v2.8 onward; model-agnostic LLM abstraction layer. |
+| [17], second entry | VIAVI internal sources | Anthropic, Claude API Documentation and Tool Use Guide | Claude tool-use framework, structured JSON output, and the enterprise API and SLA. |
+
+### Values that differ within the whitepaper
+
+Some values appear with different numbers or on different bases in different places. Each is recorded above as printed; check the cited source before reusing any of them as a requirement or as evidence.
+
+- **Simulated scale.** One million UEs is given both for a single city-scale twin of 1,000+ cells (p. 8) and for the 100-instance cluster of 100,000 cells (pp. 4 and 22, [16]). The capability lists say 100k+ cells and 1M+ UEs (p. 12) and thousands of cells and millions of users (p. 13).
+- **Simulation speed.** Up to 100× real time in Figure 3, the platform description, and Figure 8 (pp. 7, 12, and 21), but 10× real time in the agentic workflow example (p. 18).
+- **Energy share of cost.** 20–40% of OpEx in Figure 1 and on p. 7, a range the annex attributes to Rohde & Schwarz, while the GSMA Intelligence quotation in the same annex entry says 15–20% of OpEx on average [6]. The other annex figures use different bases: 32% of TCO in 5G, and nearly 50% of RAN OpEx.
+- **Energy savings from AI.** 20–30% is cited as possible from market research [8] and is marked as validated in the AI RSG lab in Figure 1, while the lab results in the annex are 10–20% for the rApp against a rule-based baseline and 15–30% with intent-based control [13], and Figure 8 shows 10–20%. The 20–30% in the GSMA quotation refers to more efficient equipment, not to AI [6].
+- **The 65% value.** Figure 1 says the 89% of respondents increasing AI spend is up from 65% twelve months earlier, while the annex lists 65% as the share saying AI is the primary force behind network automation efforts [1].
+- **Operators using AI.** The 54% value in Figure 3 is cited to [1] but is not among the survey findings listed in the annex.
+- **PlugFest scale.** The body text says 29 operator hosts across 28 labs (p. 9); the annex says the program was co-hosted by 29 operators, OTICs, and academic and research institutions in 28 labs, and separately gives 31 hosts in 24 labs for the Fall 2024 PlugFest [11].
+- **3GPP Release 18.** The body text says Release 18 mandates AI/ML for energy saving, load balancing, and mobility (p. 7); the annex says these use cases are specified in it [10].
+- **Source numbering.** Two annex entries are numbered 17, and entries [4] and [14] describe the same beam-management demonstration.
