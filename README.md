@@ -8,7 +8,7 @@ making it difficult to properly train and test AI models.
 
 AI Models life cycle management in an operational network.
 
-Any possible outage scenario if __increase AI workload__ creates overload on traditional network hardware like L2 switches or routers which are configured with hardware peak data rate limit. 
+Any possible outage scenario by unoptimized AI Models if __increase AI workload__ creates overload on traditional network hardware like L2 switches or routers which are configured with hardware peak data rate limit. 
 Exceeding Fronthaul capacity or rate boundary. 
 
 ## Simulation perspective
