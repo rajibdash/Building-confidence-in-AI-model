@@ -24,13 +24,13 @@ and safely reproduce varrying network conditions.
 ## Challenges for L1/L2 stack 
 
 Unlike higher-level orchestration (which operates in seconds or minutes), 
-the L1/L2 AI Models run directly on the data plane and hardware accelerators (HWAs).
+the L1/L2 AI Models run directly on the data plane and hardware accelerators (HWAs). Some challenges are below..
 
-* **The Microsecond Deadline (Hard Real-Time)**: At Layer 1, functions like channel estimation, Massive MIMO beamforming, and interference cancellation must execute within a fraction of a slot duration (often < 500 μs). If a model introduces a processing bottleneck, it causes packet drops and immediate SLA violations.
+* **Microsecond Deadline (Hard Real-Time)**: At Layer 1, functions like channel estimation, Massive MIMO beamforming, and interference cancellation must execute within a fraction of a slot duration (often < 500 μs). If an AI model introduces a L1 processing bottleneck, it causes packet drops and immediate SLA violations.
   
-* **Extreme Resource Constraints**: Deep learning models are inherently compute-heavy. Running unoptimized neural networks on edge cell sites strains local hardware accelerators (FPGAs, eASICs, GPUs), skyrocketing the network's Power Consumption (OPEX).
+* **Extreme Resource Constraints**: Deep learning models are inherently compute-heavy. Running __unoptimized neural networks__ on edge cell sites strains local hardware accelerators (FPGAs, eASICs, GPUs, SoCs), skyrocketing the network's Power Consumption (OPEX), spikes in power budget.
   
-* **The "Black Box" Channel Paradox**: Radio frequency (RF) channels fluctuate unpredictably due to sudden blockages, weather, or high mobility (e.g., bullet trains). An AI model trained on historical channel state information (CSI) can easily fail when encountering a novel, real-world multi-path fading environment.
+* **"Black Box" Channel Paradox**: Radio frequency (RF) channels fluctuate unpredictably due to sudden blockages, weather, or high mobility (e.g., bullet trains). An AI model trained on historical channel state information (CSI) can easily fail when encountering a novel, real-world multi-path signal fading environment.
 
 ## Pre-deployment validation playbook for AI in the RAN
 
