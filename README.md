@@ -3,8 +3,8 @@ Ensuring AI models are trained on dataset that accurately reflects real RAN and/
 How the generated datasets are realistic and trustworthy for ingestion to AI Models or LLMs so that they can behave in real time as we expect for outcome?
 
 Live networks don't always provide enough examples of unusual events, such as interference, 
-unexpected traffic patterns, handover failures or network outages, 
-making it difficult to properly train and test AI models.
+rapid changes in channel condition or SINR/RSRP drop, high UL DTX, unexpected traffic patterns, 
+handover failures or network outages, making it difficult to properly train and test AI models.
 
 AI Models life cycle management in an operational network.
 
