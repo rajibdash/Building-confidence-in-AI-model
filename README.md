@@ -11,9 +11,16 @@ Extra caution, what behaviour of AI Models when hardware fails without any servi
 AI Models life cycle management in an operational network.
 
 Any possible outage scenario by unoptimized AI Models if __increase AI workload__ creates overload on traditional network hardware like L2 switches or routers which are configured with hardware peak data rate limit. 
+
 Exceeding Fronthaul capacity or rate boundary. 
 
-## Simulation perspective
+As per my understanding, building confidence in AI models for 6G RAN nodes spans three primary technical pillars: 
+* Confidence calibration and uncertainty quantification, 
+* Explainable AI (XAI) for black-box transparency, and 
+* Safe validation using Network Digital Twins (NDTs)
+
+
+## Simulation perspective / Prototyping
 How to combine synthetic scenarios with real network data, allowing teams/designers to generate __realistic training datasets__
 and safely reproduce varrying network conditions.
 * I will do all simulation in Claude app.
