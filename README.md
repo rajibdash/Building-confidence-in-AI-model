@@ -6,7 +6,7 @@ Live networks don't always provide enough examples of unusual events, such as in
 rapid changes in channel condition or SINR/RSRP drop, high UL DTX, unexpected traffic patterns, 
 handover failures or network outages, making it difficult to properly train and test AI models.
 
-Extra caution, what behaviour of AI Models when hardware fails without any service alarms? 
+Extra caution, what behaviour of AI Models when hardware fails without any service alarms? how fatal errors from hardware interrupts will be predicted by AI Models in real time network operation.
 
 AI Models life cycle management in an operational network.
 
